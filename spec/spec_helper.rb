@@ -2,17 +2,24 @@ require 'rubygems'
 require 'rspec'
 require 'capybara'
 require 'rack/test'
+require 'rack/csrf'
+require 'sqlite3'
+require 'sequel'
 
 $:.unshift File.join(File.dirname( __FILE__), '..', 'lib') 
+require 'erector/form_for'
 
-require 'form_erector'
+DB = Sequel.sqlite
+DB.create_table :users do
+  primary_key :id
+  String :name, :null => false
+  String :about, :fixed => true
+  String :any
+  Text   :bio
+  Boolean :confirmed
+end
 
-class User
-  class << self
-    def table_name
-      :users
-    end
-  end
+class User < Sequel::Model
 end
 
 module SpecHelper
@@ -21,7 +28,12 @@ module SpecHelper
       let(:app) do
         app = Class.new(Sinatra::Base)
         app.register Sinatra::Trails
-        app.register FormErector
+        app.register Erector::FormFor
+        def app.user_form *args, &block
+          resources(:users) do
+            get(new_user){ form_for(*args, &block) }
+          end
+        end
         app.set :environment, :test
       end
 
