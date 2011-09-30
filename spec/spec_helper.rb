@@ -5,6 +5,7 @@ require 'rack/test'
 require 'rack/csrf'
 require 'sqlite3'
 require 'sequel'
+require 'sinatra/r18n'
 
 $:.unshift File.join(File.dirname( __FILE__), '..', 'lib') 
 require 'erector/form_for'

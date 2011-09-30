@@ -1,0 +1,13 @@
+models:
+    user:
+      attributes:
+        name: Nombre
+        bio: Biografía
+        confirmed: Confirmado
+
+form_for:
+  labels:
+    user:
+      bio: Biografía
+      confirmed: ¿Confirmado?
+    

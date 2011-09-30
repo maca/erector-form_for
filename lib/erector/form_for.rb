@@ -52,7 +52,7 @@ module Erector
       end
 
       def form_input field, attrs = {}
-        widget WrappedInput.new(@object, @object_name, field, attrs)
+        widget WrappedInput.new(@app, @object, @object_name, field, attrs)
       end
 
       private
@@ -77,13 +77,23 @@ module Erector
       EQUIVALENCIES = {:string => :text, :datetime_local => :'datetime-local', :phone => :tel, :fax => :tel}
       attr_reader :id
 
-      def initialize kind, object, object_name, column, opts
+      def initialize app, kind, object, object_name, column, opts
+        @type        = kind.to_sym 
+        @app         = app
+        @column      = column
+        @object_name = object_name
         opts[:name]  ||= object_name ? "#{object_name}[#{column}]" : column
         opts[:id]    ||= [object_name, column].compact.join('-').dasherize
         opts[:value] ||= Hash === object ? object[column] : object.send(column)
-        @type   = kind.to_sym 
-        @label  = opts.delete(:label) || column.to_s.titleize 
+        @label = opts.delete(:label) || default_label
         super opts
+      end
+
+      def default_label
+        return @column.to_s.titleize unless @app.respond_to?(:t)
+        @app.t.form_for.labels[@object_name][@column] |
+          @app.t.models.user.attributes[@column] |
+          @column.to_s.titleize
       end
 
       def content
@@ -132,7 +142,8 @@ module Erector
     class WrappedInput < Erector::Widget
       needs :as, :id => nil, :required => false
 
-      def initialize object, object_name, column, opts
+      def initialize app, object, object_name, column, opts
+        @app = app
         assigns = {}
 
         [:as, :required].each do |key|
@@ -170,7 +181,7 @@ module Erector
 
         case @as = @as.to_sym
         when :hidden, :string, :text, :boolean, :email, :color, :date, :datetime, :'datetime-local', :datetime_local, :email, :file, :image, :month, :number, :password, :range, :search, :tel, :phone, :fax, :time, :url, :week, :select, :radio
-          @widget = Input.new @as, object, object_name, column, opts.merge(:required => @required)
+          @widget = Input.new @app, @as, object, object_name, column, opts.merge(:required => @required)
         else
           raise ArgumentError, ":as => #{@as.inspect} is not a valid option"
         end

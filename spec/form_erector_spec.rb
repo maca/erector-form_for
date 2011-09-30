@@ -388,5 +388,45 @@ describe 'form erector' do
       it { page.should have_xpath "//form/fieldset/ol/li/fieldset/ol/li/label", :text => 'Best' }
       it { page.should have_xpath "//form/fieldset/ol/li/fieldset/ol/li/label/input[@value='best' and @checked='checked']" }
     end
+
+    describe 'translations' do
+      describe 'by model attributes' do
+        before do
+          new_user.stub!(:bio).and_return('Lorem ipsum...')
+          app.instance_eval do
+            register Sinatra::R18n
+            set :default_locale, 'es'
+            set :translations, "#{File.dirname __FILE__}/fixtures"
+          end
+
+          app.user_form(new_user) do
+            fields do 
+              form_input :name 
+              form_input :bio
+              form_input :confirmed
+              form_input :any
+            end
+          end
+          get '/users/new'
+          puts last_response.body
+        end
+
+        it 'should use model attribute translations' do
+          page.should have_css "label[for=user-name]", :text => 'Nombre'
+        end
+
+        it 'should use form_for label translation' do
+          page.should have_css "label[for=user-bio]", :text => 'Biografía'
+        end
+
+        it 'should use form_for label translation overriding model attribute' do
+          page.should have_css "label[for=user-confirmed]", :text => '¿Confirmado?'
+        end
+
+        it 'should resort to titleize column' do
+          page.should have_css "label[for=user-any]", :text => 'Any'
+        end
+      end
+    end
   end
 end

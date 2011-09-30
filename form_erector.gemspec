@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rack_csrf'
   s.add_development_dependency 'sequel'
   s.add_development_dependency 'sqlite3'
+  s.add_development_dependency 'sinatra-r18n'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
