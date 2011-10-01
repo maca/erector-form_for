@@ -408,7 +408,6 @@ describe 'form erector' do
             end
           end
           get '/users/new'
-          puts last_response.body
         end
 
         it 'should use model attribute translations' do

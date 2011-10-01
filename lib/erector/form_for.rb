@@ -163,8 +163,7 @@ module Erector
           assigns[:as] ||= :tel
         end
 
-        if Sequel::Model === object
-          column_schema = object.db_schema[column.to_sym]
+        if Sequel::Model === object && column_schema = object.db_schema[column.to_sym]
           assigns[:required] = !column_schema[:allow_null] unless assigns.has_key?(:required)
 
           type = column_schema[:db_type]
